@@ -204,16 +204,32 @@ class _ProfilScreenState extends State<ProfilScreen> {
         if (index == _currentIndex) return;
 
         if (index == 0) {
-          Navigator.push(context,
-              MaterialPageRoute(builder: (_) => const DashboardScreen()));
-        } else if (index == 1) {
-          Navigator.push(context,
-              MaterialPageRoute(builder: (_) => const RekapScreen()));
-        } else if (index == 2) {
-          Navigator.push(context,
-              MaterialPageRoute(builder: (_) => const TambahBarangScreen()));
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const DashboardScreen()),
+          );
+        } 
+        else if (index == 1) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const RekapScreen()),
+          );
+        } 
+        else if (index == 2) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const TambahBarangScreen()),
+          );
+        } 
+        else if (index == 3) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const ProfilScreen()),
+          );
         }
       },
+
+
 
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: "Beranda"),

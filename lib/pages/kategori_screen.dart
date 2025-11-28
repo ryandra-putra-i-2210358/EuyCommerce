@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/kategori_model.dart';
 import '../utils/kategori_storage.dart';
+import 'package:project_ecommerce/utils/file_helper.dart';
 
 class KategoriScreen extends StatefulWidget {
   const KategoriScreen({super.key});
@@ -31,15 +32,30 @@ class _KategoriScreenState extends State<KategoriScreen> {
 
   // Pilih foto dari gallery
   Future<void> pickImage() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? file = await picker.pickImage(source: ImageSource.gallery);
+  final ImagePicker picker = ImagePicker();
 
-    if (file != null) {
-      setState(() {
-        pickedImage = File(file.path);
-      });
-    }
-  }
+  final XFile? file = await picker.pickImage(
+    source: ImageSource.gallery,
+    maxWidth: 1500,
+    maxHeight: 1500,
+    imageQuality: 85,
+  );
+
+  if (file == null) return;
+
+  File imgFile = File(file.path);
+
+  try {
+    // Convert ke JPEG untuk jaga-jaga
+    imgFile = await convertToJpeg(imgFile);
+  } catch (_) {}
+
+  setState(() {
+    pickedImage = imgFile;
+  });
+}
+
+
 
   // Hapus kategori
   void deleteKategori(String name) async {
@@ -172,7 +188,7 @@ class _KategoriScreenState extends State<KategoriScreen> {
                 child: Row(
                   children: [
                     // FOTO
-                    if (item.image != null)
+                    if (item.image != null && File(item.image!).existsSync())
                       ClipRRect(
                         borderRadius: BorderRadius.circular(10),
                         child: Image.file(
@@ -184,6 +200,7 @@ class _KategoriScreenState extends State<KategoriScreen> {
                       )
                     else
                       const Icon(Icons.image_outlined, size: 45),
+
 
                     const SizedBox(width: 15),
 

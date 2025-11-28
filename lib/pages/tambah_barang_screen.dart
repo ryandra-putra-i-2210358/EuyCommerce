@@ -2,10 +2,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:project_ecommerce/models/kategori_model.dart';
-
 import 'package:project_ecommerce/utils/barang_storage.dart';
 import 'package:project_ecommerce/utils/kategori_storage.dart';
-
+import 'package:project_ecommerce/utils/file_helper.dart';
 import 'dashboard_screen.dart';
 import 'rekap_screen.dart';
 import 'profil_screen.dart';
@@ -15,14 +14,11 @@ class TambahBarangScreen extends StatefulWidget {
 
   @override
   State<TambahBarangScreen> createState() => _TambahBarangScreenState();
-  
 }
 
 class _TambahBarangScreenState extends State<TambahBarangScreen> {
   List<KategoriModel> kategoriList = [];
   int _currentIndex = 2;
-
-  
 
   final namaController = TextEditingController();
   final hargaJualController = TextEditingController();
@@ -42,7 +38,6 @@ class _TambahBarangScreenState extends State<TambahBarangScreen> {
     kategoriList = await KategoriStorage.getKategori();
     setState(() {});
   }
-  
 
   void openDeleteDialog() async {
     final list = kategoriList;
@@ -81,11 +76,23 @@ class _TambahBarangScreenState extends State<TambahBarangScreen> {
   Future pickImage() async {
     final picker = ImagePicker();
 
-    final file = await picker.pickImage(source: ImageSource.gallery);
+    final XFile? file = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1500,
+      maxHeight: 1500,
+      imageQuality: 85,
+    );
+
     if (file == null) return;
 
+    File imgFile = File(file.path);
+
+    try {
+      imgFile = await convertToJpeg(imgFile);
+    } catch (_) {}
+
     setState(() {
-      selectedImage = File(file.path);
+      selectedImage = imgFile;
     });
   }
 
@@ -152,12 +159,13 @@ class _TambahBarangScreenState extends State<TambahBarangScreen> {
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: Colors.black, width: 2),
                 ),
-                child: selectedImage == null
-                    ? const Icon(Icons.image_outlined, size: 110)
-                    : ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: Image.file(selectedImage!, fit: BoxFit.cover),
-                      ),
+                child:
+                    selectedImage == null
+                        ? const Icon(Icons.image_outlined, size: 110)
+                        : ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: Image.file(selectedImage!, fit: BoxFit.cover),
+                        ),
               ),
             ),
 
@@ -175,12 +183,13 @@ class _TambahBarangScreenState extends State<TambahBarangScreen> {
                   hint: const Text("Pilih Kategori"),
                   value: selectedKategori.isEmpty ? null : selectedKategori,
                   isExpanded: true,
-                  items: kategoriList.map((item) {
-                    return DropdownMenuItem(
-                      value: item.name,
-                      child: Text(item.name),
-                    );
-                  }).toList(),
+                  items:
+                      kategoriList.map((item) {
+                        return DropdownMenuItem(
+                          value: item.name,
+                          child: Text(item.name),
+                        );
+                      }).toList(),
                   onChanged: (value) {
                     setState(() {
                       selectedKategori = value!;
@@ -259,16 +268,31 @@ class _TambahBarangScreenState extends State<TambahBarangScreen> {
         if (index == _currentIndex) return;
 
         if (index == 0) {
-          Navigator.push(context,
-              MaterialPageRoute(builder: (_) => const DashboardScreen()));
-        } else if (index == 1) {
           Navigator.push(
-              context, MaterialPageRoute(builder: (_) => const RekapScreen()));
-        } else if (index == 3) {
+            context,
+            MaterialPageRoute(builder: (_) => const DashboardScreen()),
+          );
+        } 
+        else if (index == 1) {
           Navigator.push(
-              context, MaterialPageRoute(builder: (_) => const ProfilScreen()));
+            context,
+            MaterialPageRoute(builder: (_) => const RekapScreen()),
+          );
+        } 
+        else if (index == 2) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const TambahBarangScreen()),
+          );
+        } 
+        else if (index == 3) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const ProfilScreen()),
+          );
         }
       },
+
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: "Beranda"),
         BottomNavigationBarItem(icon: Icon(Icons.receipt_long), label: "Rekap"),
