@@ -1,8 +1,12 @@
+import 'dart:io';
+import '../models/kategori_model.dart';
+import '../utils/kategori_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:project_ecommerce/pages/kategori_screen.dart';
 import 'package:project_ecommerce/pages/profil_screen.dart';
 import 'package:project_ecommerce/pages/rekap_screen.dart';
 import 'package:project_ecommerce/pages/tambah_barang_screen.dart';
+import 'package:project_ecommerce/pages/barang_by_kategori_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -13,6 +17,19 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   int _currentIndex = 0;
+
+  List<KategoriModel> kategoriList = [];
+
+  @override
+  void initState() {
+    super.initState();
+    loadKategori();
+  }
+
+  void loadKategori() async {
+    kategoriList = await KategoriStorage.getKategori();
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,20 +73,36 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
             // ===== GRID MENU =====
             Expanded(
-              child: GridView.count(
-                crossAxisCount: 3,
-                mainAxisSpacing: 20,
-                crossAxisSpacing: 20,
-                children: const [
-                  DashboardItem(icon: Icons.add, title: "Transaksi"),
-                  DashboardItem(icon: Icons.image, title: "Keset"),
-                  DashboardItem(icon: Icons.image, title: "Dompet"),
-                  DashboardItem(icon: Icons.image, title: "Tas"),
-                  DashboardItem(icon: Icons.image, title: "Baju"),
-                  DashboardItem(icon: Icons.image, title: "Celana"),
-                ],
+              child: GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  mainAxisSpacing: 20,
+                  crossAxisSpacing: 20,
+                  childAspectRatio: 0.9,
+                ),
+                itemCount: kategoriList.length,
+                itemBuilder: (context, index) {
+                  final item = kategoriList[index];
+
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              BarangByKategoriScreen(kategori: item.name),
+                        ),
+                      );
+                    },
+                    child: DashboardItem(
+                      title: item.name,
+                      imagePath: item.image,
+                    ),
+                  );
+                },
               ),
             ),
+
           ],
         ),
       ),
@@ -77,11 +110,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
       // ===== FLOATING BUTTON =====
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFF173B63),
-        onPressed: () {
-          Navigator.push(
+        onPressed: () async {
+          await Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const KategoriScreen()),
           );
+
+          // refresh ketika balik
+          loadKategori();
         },
         child: const Icon(Icons.add, size: 30, color: Colors.white),
       ),
@@ -102,20 +138,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
               context,
               MaterialPageRoute(builder: (_) => const DashboardScreen()),
             );
-          } 
-          else if (index == 1) {
+          } else if (index == 1) {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const RekapScreen()),
             );
-          } 
-          else if (index == 2) {
+          } else if (index == 2) {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const TambahBarangScreen()),
             );
-          } 
-          else if (index == 3) {
+          } else if (index == 3) {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const ProfilScreen()),
@@ -123,13 +156,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
           }
         },
 
-
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Beranda"),
           BottomNavigationBarItem(
-              icon: Icon(Icons.receipt_long), label: "Rekapitulasi"),
+            icon: Icon(Icons.receipt_long),
+            label: "Rekapitulasi",
+          ),
           BottomNavigationBarItem(
-              icon: Icon(Icons.add_box), label: "Tambah Barang"),
+            icon: Icon(Icons.add_box),
+            label: "Tambah Barang",
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profil"),
         ],
       ),
@@ -139,10 +175,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
 // ===== WIDGET GRID ITEM =====
 class DashboardItem extends StatelessWidget {
-  final IconData icon;
   final String title;
+  final String? imagePath;
 
-  const DashboardItem({super.key, required this.icon, required this.title});
+  const DashboardItem({super.key, required this.title, this.imagePath});
 
   @override
   Widget build(BuildContext context) {
@@ -155,10 +191,20 @@ class DashboardItem extends StatelessWidget {
             border: Border.all(color: Colors.black),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(icon, size: 40),
+          child:
+              imagePath != null && File(imagePath!).existsSync()
+                  ? ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image.file(File(imagePath!), fit: BoxFit.cover),
+                  )
+                  : const Icon(Icons.image_outlined, size: 40),
         ),
         const SizedBox(height: 8),
-        Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+        Text(
+          title,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center,
+        ),
       ],
     );
   }

@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../models/barang_model.dart';
+
 class BarangItem {
   final String nama;
   final int hargaJual;
@@ -39,20 +41,24 @@ class BarangItem {
   }
 }
 
+// import 'dart:convert';
+// import 'package:shared_preferences/shared_preferences.dart';
+// import '../models/barang_model.dart';
+
 class BarangStorage {
   static const String key = "barang_list";
 
-  static Future<List<BarangItem>> getBarang() async {
+  static Future<List<BarangModel>> getBarang() async {
     final prefs = await SharedPreferences.getInstance();
     final data = prefs.getString(key);
 
     if (data == null) return [];
 
-    List list = jsonDecode(data);
-    return list.map((e) => BarangItem.fromJson(e)).toList();
+    final List list = jsonDecode(data);
+    return list.map((e) => BarangModel.fromJson(e)).toList();
   }
 
-  static Future<void> addBarang(BarangItem item) async {
+  static Future<void> addBarang(BarangModel item) async {
     final prefs = await SharedPreferences.getInstance();
     final list = await getBarang();
 
@@ -63,4 +69,11 @@ class BarangStorage {
       jsonEncode(list.map((e) => e.toJson()).toList()),
     );
   }
+
+  static Future<List<BarangModel>> getBarangByKategori(String kategori) async {
+    final list = await getBarang();
+    return list.where((e) => e.kategori == kategori).toList();
+  }
 }
+
+

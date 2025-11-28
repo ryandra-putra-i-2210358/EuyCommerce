@@ -5,6 +5,7 @@ import 'package:project_ecommerce/models/kategori_model.dart';
 import 'package:project_ecommerce/utils/barang_storage.dart';
 import 'package:project_ecommerce/utils/kategori_storage.dart';
 import 'package:project_ecommerce/utils/file_helper.dart';
+import 'package:project_ecommerce/models/barang_model.dart';
 import 'dashboard_screen.dart';
 import 'rekap_screen.dart';
 import 'profil_screen.dart';
@@ -104,7 +105,7 @@ class _TambahBarangScreenState extends State<TambahBarangScreen> {
       return;
     }
 
-    final item = BarangItem(
+    final item = BarangModel(
       nama: namaController.text,
       hargaJual: int.tryParse(hargaJualController.text) ?? 0,
       hargaBeli: int.tryParse(hargaBeliController.text) ?? 0,
@@ -112,6 +113,7 @@ class _TambahBarangScreenState extends State<TambahBarangScreen> {
       kategori: selectedKategori,
       imagePath: selectedImage?.path,
     );
+
 
     await BarangStorage.addBarang(item);
 
@@ -226,10 +228,15 @@ class _TambahBarangScreenState extends State<TambahBarangScreen> {
                 onPressed: tambahBarang,
                 child: const Text(
                   "Tambah ke daftar barang",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),
+
           ],
         ),
       ),
