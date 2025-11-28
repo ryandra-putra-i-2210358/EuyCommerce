@@ -1,32 +1,47 @@
+import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../models/kategori_model.dart';
+
 class KategoriStorage {
-  static const key = "kategori_list";
+  static const String key = 'kategori_list';
 
-  // Ambil semua kategori
-  static Future<List<String>> getKategori() async {
-    final pref = await SharedPreferences.getInstance();
-    return pref.getStringList(key) ?? [];
+  // Ambil kategori
+  static Future<List<KategoriModel>> getKategori() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // Ambil LIST STRING, bukan string tunggal
+    final List<String>? savedList = prefs.getStringList(key);
+
+    if (savedList == null) return [];
+
+    return savedList
+        .map((e) => KategoriModel.fromJson(jsonDecode(e)))
+        .toList();
   }
 
-  // Tambah kategori baru
-  static Future<void> addKategori(String nama) async {
-    final pref = await SharedPreferences.getInstance();
-    final list = pref.getStringList(key) ?? [];
+  // Tambah kategori
+  static Future<void> addKategori(KategoriModel item) async {
+    final prefs = await SharedPreferences.getInstance();
 
-    // Hindari duplikat
-    if (!list.contains(nama)) {
-      list.add(nama);
-      await pref.setStringList(key, list);
-    }
+    List<String> currentList = prefs.getStringList(key) ?? [];
+
+    currentList.add(jsonEncode(item.toJson()));
+
+    await prefs.setStringList(key, currentList);
   }
-  static Future<void> deleteKategori(String nama) async {
-  final pref = await SharedPreferences.getInstance();
-  final list = pref.getStringList(key) ?? [];
 
-  list.remove(nama);
+  // Hapus kategori
+  static Future<void> deleteKategori(String name) async {
+    final prefs = await SharedPreferences.getInstance();
 
-  await pref.setStringList(key, list);
-}
+    List<String> currentList = prefs.getStringList(key) ?? [];
 
+    currentList.removeWhere((e) {
+      final data = KategoriModel.fromJson(jsonDecode(e));
+      return data.name == name;
+    });
+
+    await prefs.setStringList(key, currentList);
+  }
 }

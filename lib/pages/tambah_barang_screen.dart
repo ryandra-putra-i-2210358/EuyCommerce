@@ -1,5 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
-import '../utils/kategori_storage.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:project_ecommerce/models/kategori_model.dart';
+
+import 'package:project_ecommerce/utils/barang_storage.dart';
+import 'package:project_ecommerce/utils/kategori_storage.dart';
+
 import 'dashboard_screen.dart';
 import 'rekap_screen.dart';
 import 'profil_screen.dart';
@@ -9,17 +15,22 @@ class TambahBarangScreen extends StatefulWidget {
 
   @override
   State<TambahBarangScreen> createState() => _TambahBarangScreenState();
+  
 }
 
 class _TambahBarangScreenState extends State<TambahBarangScreen> {
-  List<String> kategoriList = [];
+  List<KategoriModel> kategoriList = [];
   int _currentIndex = 2;
+
+  
 
   final namaController = TextEditingController();
   final hargaJualController = TextEditingController();
   final hargaBeliController = TextEditingController();
   final labaController = TextEditingController();
-  final kategoriController = TextEditingController();
+
+  String selectedKategori = "";
+  File? selectedImage;
 
   @override
   void initState() {
@@ -31,15 +42,10 @@ class _TambahBarangScreenState extends State<TambahBarangScreen> {
     kategoriList = await KategoriStorage.getKategori();
     setState(() {});
   }
+  
 
-  void reloadKategori() async {
-    kategoriList = await KategoriStorage.getKategori();
-    setState(() {});
-  }
-
-  // DIALOG HAPUS KATEGORI
   void openDeleteDialog() async {
-    final list = await KategoriStorage.getKategori();
+    final list = kategoriList;
 
     showDialog(
       context: context,
@@ -54,13 +60,13 @@ class _TambahBarangScreenState extends State<TambahBarangScreen> {
               itemBuilder: (context, index) {
                 final item = list[index];
                 return ListTile(
-                  title: Text(item),
+                  title: Text(item.name),
                   trailing: IconButton(
                     icon: const Icon(Icons.delete, color: Colors.red),
                     onPressed: () async {
-                      await KategoriStorage.deleteKategori(item);
+                      await KategoriStorage.deleteKategori(item.name);
                       Navigator.pop(context);
-                      reloadKategori();
+                      loadKategori();
                     },
                   ),
                 );
@@ -70,6 +76,51 @@ class _TambahBarangScreenState extends State<TambahBarangScreen> {
         );
       },
     );
+  }
+
+  Future pickImage() async {
+    final picker = ImagePicker();
+
+    final file = await picker.pickImage(source: ImageSource.gallery);
+    if (file == null) return;
+
+    setState(() {
+      selectedImage = File(file.path);
+    });
+  }
+
+  void tambahBarang() async {
+    if (selectedKategori.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Pilih kategori terlebih dahulu")),
+      );
+      return;
+    }
+
+    final item = BarangItem(
+      nama: namaController.text,
+      hargaJual: int.tryParse(hargaJualController.text) ?? 0,
+      hargaBeli: int.tryParse(hargaBeliController.text) ?? 0,
+      laba: int.tryParse(labaController.text) ?? 0,
+      kategori: selectedKategori,
+      imagePath: selectedImage?.path,
+    );
+
+    await BarangStorage.addBarang(item);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Barang berhasil ditambahkan")),
+    );
+
+    namaController.clear();
+    hargaJualController.clear();
+    hargaBeliController.clear();
+    labaController.clear();
+
+    setState(() {
+      selectedKategori = "";
+      selectedImage = null;
+    });
   }
 
   @override
@@ -92,24 +143,27 @@ class _TambahBarangScreenState extends State<TambahBarangScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 25),
         child: Column(
           children: [
-            // Gambar placeholder
-            Container(
-              width: 180,
-              height: 180,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.black, width: 2),
-              ),
-              child: const Icon(
-                Icons.image_outlined,
-                size: 110,
-                color: Colors.black87,
+            GestureDetector(
+              onTap: pickImage,
+              child: Container(
+                width: 180,
+                height: 180,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.black, width: 2),
+                ),
+                child: selectedImage == null
+                    ? const Icon(Icons.image_outlined, size: 110)
+                    : ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Image.file(selectedImage!, fit: BoxFit.cover),
+                      ),
               ),
             ),
 
             const SizedBox(height: 35),
 
-            // ===== DROPDOWN + DELETE BUTTON =====
+            // =============== DROPDOWN KATEGORI ================
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 18),
               decoration: BoxDecoration(
@@ -118,20 +172,18 @@ class _TambahBarangScreenState extends State<TambahBarangScreen> {
               ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
-                  hint: const Text("Pilih Kategorii"),
-                  value: kategoriController.text.isEmpty
-                      ? null
-                      : kategoriController.text,
+                  hint: const Text("Pilih Kategori"),
+                  value: selectedKategori.isEmpty ? null : selectedKategori,
                   isExpanded: true,
                   items: kategoriList.map((item) {
                     return DropdownMenuItem(
-                      value: item,
-                      child: Text(item),
+                      value: item.name,
+                      child: Text(item.name),
                     );
                   }).toList(),
                   onChanged: (value) {
                     setState(() {
-                      kategoriController.text = value!;
+                      selectedKategori = value!;
                     });
                   },
                 ),
@@ -140,17 +192,18 @@ class _TambahBarangScreenState extends State<TambahBarangScreen> {
 
             const SizedBox(height: 15),
 
-
-            _inputField("harga jual", hargaJualController, isNumber: true),
+            _inputField("Nama Barang", namaController),
             const SizedBox(height: 15),
 
-            _inputField("harga beli", hargaBeliController, isNumber: true),
+            _inputField("Harga Jual", hargaJualController, isNumber: true),
             const SizedBox(height: 15),
 
-            _inputField("laba", labaController, isNumber: true),
+            _inputField("Harga Beli", hargaBeliController, isNumber: true),
+            const SizedBox(height: 15),
+
+            _inputField("Laba", labaController, isNumber: true),
             const SizedBox(height: 30),
 
-            // BUTTON TAMBAH
             SizedBox(
               width: double.infinity,
               height: 55,
@@ -161,20 +214,10 @@ class _TambahBarangScreenState extends State<TambahBarangScreen> {
                     borderRadius: BorderRadius.circular(20),
                   ),
                 ),
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Barang berhasil ditambahkan"),
-                    ),
-                  );
-                },
+                onPressed: tambahBarang,
                 child: const Text(
                   "Tambah ke daftar barang",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -186,7 +229,6 @@ class _TambahBarangScreenState extends State<TambahBarangScreen> {
     );
   }
 
-  // WIDGET INPUT FIELD
   Widget _inputField(
     String hint,
     TextEditingController controller, {
