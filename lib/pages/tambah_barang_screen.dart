@@ -118,7 +118,7 @@ class _TambahBarangScreenState extends State<TambahBarangScreen> {
               ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
-                  hint: const Text("Pilih Kategori"),
+                  hint: const Text("Pilih Kategory"),
                   value: kategoriController.text.isEmpty
                       ? null
                       : kategoriController.text,
