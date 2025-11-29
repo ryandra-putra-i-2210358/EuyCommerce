@@ -32,71 +32,35 @@ class _KategoriScreenState extends State<KategoriScreen> {
 
   // Pilih foto dari gallery
   Future<void> pickImage() async {
-    final ImagePicker picker = ImagePicker();
+  final ImagePicker picker = ImagePicker();
 
-    final XFile? file = await picker.pickImage(
-      source: ImageSource.gallery,
-      maxWidth: 1500,
-      maxHeight: 1500,
-      imageQuality: 85,
-    );
+  final XFile? file = await picker.pickImage(
+    source: ImageSource.gallery,
+    maxWidth: 1500,
+    maxHeight: 1500,
+    imageQuality: 85,
+  );
 
-    if (file == null) return;
+  if (file == null) return;
 
-    File imgFile = File(file.path);
+  File imgFile = File(file.path);
 
-    try {
-      imgFile = await convertToJpeg(imgFile);
-    } catch (_) {}
+  try {
+    // Convert ke JPEG untuk jaga-jaga
+    imgFile = await convertToJpeg(imgFile);
+  } catch (_) {}
 
-    setState(() {
-      pickedImage = imgFile;
-    });
-  }
+  setState(() {
+    pickedImage = imgFile;
+  });
+}
+
+
 
   // Hapus kategori
   void deleteKategori(String name) async {
     await KategoriStorage.deleteKategori(name);
     loadKategori();
-  }
-
-  // 🔥 DIALOG KONFIRMASI DELETE
-  void showDeleteConfirm(String name) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text("Konfirmasi Hapus"),
-          content: Text("Yakin ingin menghapus kategori '$name'?"),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
-
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text(
-                "Batal",
-                style: TextStyle(fontSize: 15),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                deleteKategori(name);
-              },
-              child: const Text(
-                "Hapus",
-                style: TextStyle(
-                  color: Colors.red,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   @override
@@ -237,6 +201,7 @@ class _KategoriScreenState extends State<KategoriScreen> {
                     else
                       const Icon(Icons.image_outlined, size: 45),
 
+
                     const SizedBox(width: 15),
 
                     Expanded(
@@ -245,7 +210,7 @@ class _KategoriScreenState extends State<KategoriScreen> {
 
                     IconButton(
                       icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: () => showDeleteConfirm(item.name),
+                      onPressed: () => deleteKategori(item.name),
                     ),
                   ],
                 ),

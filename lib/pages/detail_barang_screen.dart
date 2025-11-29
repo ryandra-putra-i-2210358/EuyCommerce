@@ -1,6 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:project_ecommerce/models/barang_model.dart';
+import 'package:project_ecommerce/pages/keranjang_screen.dart';
+import 'package:project_ecommerce/utils/cart_storage.dart';
+
 
 class DetailBarangScreen extends StatelessWidget {
   final BarangModel item;
@@ -70,13 +73,28 @@ class DetailBarangScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                   ),
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  CartStorage.tambahBarang(item);
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const KeranjangScreen(),
+                    ),
+                  );
+                },
+
                 child: const Text(
                   "Tambah ke Keranjang",
-                  style: TextStyle(fontSize: 16, color: Colors.white),
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),
+
+          
           ],
         ),
       ),
