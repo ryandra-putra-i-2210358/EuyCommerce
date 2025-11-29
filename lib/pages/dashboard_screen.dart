@@ -19,6 +19,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   int _currentIndex = 0;
 
   List<KategoriModel> kategoriList = [];
+  List<KategoriModel> filteredList = [];
+
+  TextEditingController searchController = TextEditingController();
 
   @override
   void initState() {
@@ -28,7 +31,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   void loadKategori() async {
     kategoriList = await KategoriStorage.getKategori();
-    setState(() {});
+
+    setState(() {
+      filteredList = kategoriList; // awal: tampilkan semua
+    });
+  }
+
+  void filterKategori(String query) {
+    final hasil = kategoriList.where((item) {
+      final nama = item.name.toLowerCase();
+      final gambar = (item.image ?? "").toLowerCase();
+      final q = query.toLowerCase();
+
+      return nama.contains(q) || gambar.contains(q);
+    }).toList();
+
+    setState(() {
+      filteredList = hasil;
+    });
   }
 
   @override
@@ -36,7 +56,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
 
-      // ===== APPBAR =====
       appBar: AppBar(
         backgroundColor: const Color(0xFF173B63),
         elevation: 0,
@@ -48,7 +67,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
       ),
 
-      // ===== BODY =====
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -60,8 +78,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 border: Border.all(color: Colors.black),
                 borderRadius: BorderRadius.circular(30),
               ),
-              child: const TextField(
-                decoration: InputDecoration(
+              child: TextField(
+                controller: searchController,
+                onChanged: filterKategori,
+                decoration: const InputDecoration(
                   icon: Icon(Icons.search),
                   hintText: "cari barang",
                   border: InputBorder.none,
@@ -73,41 +93,48 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
             // ===== GRID MENU =====
             Expanded(
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  mainAxisSpacing: 20,
-                  crossAxisSpacing: 20,
-                  childAspectRatio: 0.9,
-                ),
-                itemCount: kategoriList.length,
-                itemBuilder: (context, index) {
-                  final item = kategoriList[index];
+              child: filteredList.isEmpty
+                  ? const Center(
+                      child: Text(
+                        "Tidak ada hasil",
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    )
+                  : GridView.builder(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3,
+                        mainAxisSpacing: 20,
+                        crossAxisSpacing: 20,
+                        childAspectRatio: 0.9,
+                      ),
+                      itemCount: filteredList.length,
+                      itemBuilder: (context, index) {
+                        final item = filteredList[index];
 
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) =>
-                              BarangByKategoriScreen(kategori: item.name),
-                        ),
-                      );
-                    },
-                    child: DashboardItem(
-                      title: item.name,
-                      imagePath: item.image,
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => BarangByKategoriScreen(
+                                  kategori: item.name,
+                                ),
+                              ),
+                            );
+                          },
+                          child: DashboardItem(
+                            title: item.name,
+                            imagePath: item.image,
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
             ),
-
           ],
         ),
       ),
 
-      // ===== FLOATING BUTTON =====
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFF173B63),
         onPressed: () async {
@@ -116,20 +143,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
             MaterialPageRoute(builder: (_) => const KategoriScreen()),
           );
 
-          // refresh ketika balik
+          // refresh ketika kembali
           loadKategori();
         },
         child: const Icon(Icons.add, size: 30, color: Colors.white),
       ),
 
-      // ===== BOTTOM NAVIGATION =====
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.white70,
         backgroundColor: const Color(0xFF173B63),
         type: BottomNavigationBarType.fixed,
-
         onTap: (index) {
           if (index == _currentIndex) return;
 
@@ -155,17 +180,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
             );
           }
         },
-
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Beranda"),
           BottomNavigationBarItem(
-            icon: Icon(Icons.receipt_long),
-            label: "Rekapitulasi",
-          ),
+              icon: Icon(Icons.receipt_long), label: "Rekapitulasi"),
           BottomNavigationBarItem(
-            icon: Icon(Icons.add_box),
-            label: "Tambah Barang",
-          ),
+              icon: Icon(Icons.add_box), label: "Tambah Barang"),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profil"),
         ],
       ),
@@ -191,13 +211,12 @@ class DashboardItem extends StatelessWidget {
             border: Border.all(color: Colors.black),
             borderRadius: BorderRadius.circular(10),
           ),
-          child:
-              imagePath != null && File(imagePath!).existsSync()
-                  ? ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Image.file(File(imagePath!), fit: BoxFit.cover),
-                  )
-                  : const Icon(Icons.image_outlined, size: 40),
+          child: (imagePath != null && File(imagePath!).existsSync())
+              ? ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Image.file(File(imagePath!), fit: BoxFit.cover),
+                )
+              : const Icon(Icons.image_outlined, size: 40),
         ),
         const SizedBox(height: 8),
         Text(
