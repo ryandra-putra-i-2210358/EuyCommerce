@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:project_ecommerce/models/barang_model.dart';
 import 'package:project_ecommerce/utils/cart_storage.dart';
 import 'package:project_ecommerce/pages/checkout_screen.dart';
-
+import 'package:project_ecommerce/pages/dashboard_screen.dart';
 class KeranjangScreen extends StatefulWidget {
   const KeranjangScreen({super.key});
 
@@ -186,37 +186,84 @@ class _KeranjangScreenState extends State<KeranjangScreen> {
             ),
 
             // TOMBOL CHECKOUT
-            SizedBox(
-              width: double.infinity,
-              height: 55,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF173B63),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18),
+            Row(
+              children: [
+                // Tombol Dashboard (kiri)
+                Expanded(
+                  child: SizedBox(
+                    height: 55,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromARGB(255, 220, 220, 33), // warna bebas
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const DashboardScreen(),
+                          ),
+                        );
+                      },
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.add, color: Colors.white),
+                          SizedBox(width: 3),
+                          Text(
+                            "Tambah",
+                            style: TextStyle(
+                              color: Colors.white, 
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const CheckoutScreen(),
+
+                const SizedBox(width: 10),
+
+                // Tombol Checkout (kanan)
+                Expanded(
+                  child: SizedBox(
+                    height: 55,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color(0xFF173B63),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const CheckoutScreen(),
+                          ),
+                        );
+                      },
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.receipt_long, color: Colors.white),
+                          SizedBox(width: 8),
+                          Text(
+                            "Check Out",
+                            style: TextStyle(fontSize: 16, color: Colors.white),
+                          ),
+                        ],
+                      ),
                     ),
-                  );
-                },
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.receipt_long, color: Colors.white),
-                    SizedBox(width: 8),
-                    Text(
-                      "Check Out",
-                      style: TextStyle(fontSize: 16, color: Colors.white),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
+              ],
+            )
+
           ],
         ),
       ),

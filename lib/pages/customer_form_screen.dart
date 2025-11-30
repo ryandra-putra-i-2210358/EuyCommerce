@@ -26,6 +26,7 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: const Color(0xFF173B63),
         title: const Text("Data Customer", style: TextStyle(color: Colors.white)),
