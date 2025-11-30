@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 
-// Pages
 import 'dashboard_screen.dart';
 import 'tambah_barang_screen.dart';
 import 'profil_screen.dart';
 
-// Model & Storage
-import 'package:project_ecommerce/models/riwayat_model.dart';
-import 'package:project_ecommerce/utils/riwayat_storage.dart';
+import 'package:project_ecommerce/models/transaksi_model.dart';
+import 'package:project_ecommerce/utils/rekap_storage.dart';
 
 class RekapScreen extends StatefulWidget {
   const RekapScreen({super.key});
@@ -18,8 +16,9 @@ class RekapScreen extends StatefulWidget {
 
 class _RekapScreenState extends State<RekapScreen> {
   int _currentIndex = 1;
-  List<RiwayatModel> riwayat = [];
+  List<Transaksi> data = [];
 
+  
   @override
   void initState() {
     super.initState();
@@ -27,15 +26,16 @@ class _RekapScreenState extends State<RekapScreen> {
   }
 
   Future<void> loadData() async {
-    riwayat = await RiwayatStorage.getRiwayat();
+    data = await RekapStorage.loadTransaksi();
     setState(() {});
   }
 
-  Future<void> hapusRiwayat(int index) async {
-    riwayat.removeAt(index);
+  Future<void> hapusTransaksi(int index) async {
+    data.removeAt(index);
 
-    // WAJIB! Supaya data benar-benar hilang dari penyimpanan
-    await RiwayatStorage.saveRiwayat(riwayat);
+    // simpan ulang seluruh data
+    await RekapStorage.saveAllTransaksi(data);
+
 
     setState(() {});
   }
@@ -46,78 +46,102 @@ class _RekapScreenState extends State<RekapScreen> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF173B63),
         title: const Text(
-          "Rekapitulasi",
+          "Rekap Transaksi",
           style: TextStyle(color: Colors.white),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
 
-      body: riwayat.isEmpty
+      body: data.isEmpty
           ? const Center(
               child: Text(
-                "Belum ada riwayat pembayaran",
+                "Belum ada transaksi",
                 style: TextStyle(fontSize: 16),
               ),
             )
           : ListView.builder(
-              itemCount: riwayat.length,
+              itemCount: data.length,
               itemBuilder: (context, index) {
-                final r = riwayat[index];
+                final trx = data[index];
 
                 return Card(
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  elevation: 2,
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: ListTile(
                     title: Text(
-                      "Metode: ${r.metode}",
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
+                      "Transaksi #${trx.idTransaksi}",
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    subtitle: Text("Tanggal: ${r.tanggal}"),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          "Rp ${r.totalBayar}",
-                          style: const TextStyle(
-                            color: Colors.green,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
+                    subtitle: Text(
+                      "${trx.nama} • ${trx.tanggal}\nTotal: Rp ${trx.total}",
+                    ),
+                    isThreeLine: true,
 
-                        // Tombol hapus
-                        IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () {
-                            showDialog(
-                              context: context,
-                              builder: (_) => AlertDialog(
-                                title: const Text("Hapus Riwayat"),
-                                content: const Text(
-                                    "Apakah kamu yakin ingin menghapus riwayat ini?"),
-                                actions: [
-                                  TextButton(
-                                    child: const Text("Batal"),
-                                    onPressed: () => Navigator.pop(context),
-                                  ),
-                                  TextButton(
-                                    child: const Text("Hapus", style: TextStyle(color: Colors.red)),
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                      hapusRiwayat(index);
-                                    },
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (_) => AlertDialog(
+                          title: Text("Detail Transaksi #${trx.idTransaksi}"),
+                          content: SizedBox(
+                            width: 350,
+                            height: 300,
+                            child: ListView(
+                              children: [
+                                Text("Nama: ${trx.nama}"),
+                                Text("Email: ${trx.email}"),
+                                Text("No HP: ${trx.nohp}"),
+                                Text("Alamat: ${trx.alamat}"),
+                                const Divider(height: 20),
+
+                                const Text(
+                                  "Daftar Barang:",
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+
+                                ...trx.items.map((item) => ListTile(
+                                      title: Text(item.namaBarang),
+                                      subtitle: Text("Qty: ${item.qty}"),
+                                      trailing: Text("Rp ${item.harga}"),
+                                    )),
+                              ],
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              child: const Text("Tutup"),
+                              onPressed: () => Navigator.pop(context),
+                            )
+                          ],
                         ),
-                      ],
+                      );
+                    },
+
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (_) => AlertDialog(
+                            title: const Text("Hapus Transaksi"),
+                            content: const Text("Yakin ingin menghapus transaksi ini?"),
+                            actions: [
+                              TextButton(
+                                child: const Text("Batal"),
+                                onPressed: () => Navigator.pop(context),
+                              ),
+                              TextButton(
+                                child: const Text(
+                                  "Hapus",
+                                  style: TextStyle(color: Colors.red),
+                                ),
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                  hapusTransaksi(index);
+                                },
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
                   ),
                 );
@@ -128,9 +152,6 @@ class _RekapScreenState extends State<RekapScreen> {
     );
   }
 
-  // ============================================================
-  // BOTTOM NAVIGATION BAR
-  // ============================================================
   BottomNavigationBar _bottomNav() {
     return BottomNavigationBar(
       currentIndex: _currentIndex,
@@ -167,22 +188,10 @@ class _RekapScreenState extends State<RekapScreen> {
       },
 
       items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home),
-          label: "Beranda",
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.receipt_long),
-          label: "Rekapitulasi",
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.add_box),
-          label: "Tambah Barang",
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person),
-          label: "Profil",
-        ),
+        BottomNavigationBarItem(icon: Icon(Icons.home), label: "Beranda"),
+        BottomNavigationBarItem(icon: Icon(Icons.receipt_long), label: "Rekap"),
+        BottomNavigationBarItem(icon: Icon(Icons.add_box), label: "Tambah"),
+        BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profil"),
       ],
     );
   }

@@ -6,7 +6,11 @@ import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:project_ecommerce/models/barang_model.dart';
-import 'package:project_ecommerce/pages/dashboard_screen.dart';
+// import 'package:project_ecommerce/pages/dashboard_screen.dart';
+import 'package:project_ecommerce/models/transaksi_detail_model.dart';
+import 'package:project_ecommerce/models/transaksi_model.dart';
+import 'package:project_ecommerce/utils/rekap_storage.dart';
+import 'package:project_ecommerce/pages/rekap_screen.dart';
 
 class InvoiceScreen extends StatelessWidget {
   final int totalHarga;
@@ -15,6 +19,7 @@ class InvoiceScreen extends StatelessWidget {
   final String customerNohp;
   final String customerAlamat;
   final List items;
+  
 
   const InvoiceScreen({
     super.key,
@@ -72,7 +77,44 @@ class InvoiceScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(25),
                   ),
                 ),
-                onPressed: () => _generatePdf(context),
+                onPressed: () async {
+                  await _generatePdf(context);
+
+                  final trx = Transaksi(
+                    idTransaksi: DateTime.now().millisecondsSinceEpoch.toString(),
+                    nama: customerNama,
+                    email: customerEmail,
+                    nohp: customerNohp,
+                    alamat: customerAlamat,
+                    tanggal: DateTime.now(),
+                    total: totalHarga,
+                    items: items.map((item) {
+                      final barang = item["barang"];
+                      return TransaksiDetail(
+                        idBarang: barang.nama,
+                        namaBarang: barang.nama,
+                        harga: barang.hargaJual,
+                        qty: item["jumlah"],
+                      );
+                    }).toList(),
+                  );
+
+                  // await RekapStorage.saveTransaksi(trx);
+                  await RekapStorage.saveTransaksi(trx);
+
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Transaksi berhasil disimpan!")),
+                    );
+
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => const RekapScreen()),
+                    );
+                  }
+
+                },
+
                 child: const Text(
                   "Download Invoice",
                   style: TextStyle(color: Colors.white, fontSize: 17),
@@ -81,6 +123,7 @@ class InvoiceScreen extends StatelessWidget {
             ),
 
             const SizedBox(height: 20),
+            
 
             // Kembali ke Dashboard
             SizedBox(
@@ -93,11 +136,12 @@ class InvoiceScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(25),
                   ),
                 ),
+                
                 onPressed: () {
                   Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const DashboardScreen(),
+                      builder: (_) => const RekapScreen(),
                     ),
                     (route) => false,
                   );

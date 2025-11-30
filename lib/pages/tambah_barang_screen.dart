@@ -107,6 +107,7 @@ class _TambahBarangScreenState extends State<TambahBarangScreen> {
     }
 
     final item = BarangModel(
+      id: DateTime.now().millisecondsSinceEpoch.toString(), 
       nama: namaController.text,
       bahanBaku: bahanBakuController.text,
       hargaJual: int.tryParse(hargaJualController.text) ?? 0,
