@@ -142,7 +142,7 @@ class _KategoriScreenState extends State<KategoriScreen> {
           : SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 25),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                // crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // FOTO PREVIEW
                   GestureDetector(
@@ -215,8 +215,9 @@ class _KategoriScreenState extends State<KategoriScreen> {
 
                   const Text(
                     "Daftar Kategori",
+                    // crossAxisAlignment: CrossAxisAlignment.start,
                     style: TextStyle(
-                      fontSize: 17,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
                   ),

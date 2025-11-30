@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:project_ecommerce/utils/cart_storage.dart';
 import 'package:project_ecommerce/models/barang_model.dart';
-import 'package:project_ecommerce/pages/payment_method_screen.dart';
+import 'package:project_ecommerce/pages/invoice_screen.dart';
 
 class CheckoutScreen extends StatelessWidget {
   const CheckoutScreen({super.key});
@@ -11,6 +11,7 @@ class CheckoutScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final keranjang = CartStorage.keranjang;
     final totalHarga = CartStorage.totalHarga();
+    
 
     return Scaffold(
       appBar: AppBar(
@@ -24,6 +25,7 @@ class CheckoutScreen extends StatelessWidget {
         child: Column(
           children: [
 
+            // LIST KERANJANG
             Expanded(
               child: ListView.builder(
                 itemCount: keranjang.length,
@@ -89,7 +91,7 @@ class CheckoutScreen extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            // tombol bayar
+            // TOMBOL BAYAR
             SizedBox(
               width: double.infinity,
               height: 55,
@@ -101,10 +103,14 @@ class CheckoutScreen extends StatelessWidget {
                   ),
                 ),
                 onPressed: () {
+                  // Kirim total dan seluruh item keranjang
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => PaymentMethodScreen(totalHarga: totalHarga),
+                      builder: (_) => InvoiceScreen(
+                        totalHarga: totalHarga,
+                        items: keranjang, // <= seluruh barang + jumlahnya
+                      ),
                     ),
                   );
                 },
