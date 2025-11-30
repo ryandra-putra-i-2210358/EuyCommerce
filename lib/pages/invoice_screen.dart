@@ -27,11 +27,12 @@ class InvoiceScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text(
           "Invoice",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 23, color: Colors.white),
         ),
         backgroundColor: const Color(0xFF123A64),
         centerTitle: true,
         elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
 
       // ================= BODY =================

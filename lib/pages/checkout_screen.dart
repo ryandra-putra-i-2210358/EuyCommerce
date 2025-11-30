@@ -11,12 +11,14 @@ class CheckoutScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final keranjang = CartStorage.keranjang;
     final totalHarga = CartStorage.totalHarga();
-    
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xFF173B63),
-        title: const Text("Checkout", style: TextStyle(color: Colors.white)),
+        title: const Text(
+          "Checkout",
+          style: TextStyle(color: Colors.white),
+        ),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
 
@@ -25,7 +27,9 @@ class CheckoutScreen extends StatelessWidget {
         child: Column(
           children: [
 
-            // LIST KERANJANG
+            // ===============================
+            // LIST PRODUK DALAM KERANJANG
+            // ===============================
             Expanded(
               child: ListView.builder(
                 itemCount: keranjang.length,
@@ -70,7 +74,9 @@ class CheckoutScreen extends StatelessWidget {
 
             const SizedBox(height: 10),
 
+            // ===============================
             // TOTAL BAYAR
+            // ===============================
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -91,7 +97,9 @@ class CheckoutScreen extends StatelessWidget {
 
             const SizedBox(height: 20),
 
+            // ===============================
             // TOMBOL BAYAR
+            // ===============================
             SizedBox(
               width: double.infinity,
               height: 55,
@@ -102,18 +110,54 @@ class CheckoutScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(18),
                   ),
                 ),
-                onPressed: () {
-                  // Kirim total dan seluruh item keranjang
+
+                onPressed: () async {
+                  // ============= SHOW LOADING =============
+                  showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (_) => Center(
+                      child: Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(18),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.15),
+                              blurRadius: 10,
+                            ),
+                          ],
+                        ),
+                        child: const Padding(
+                          padding: EdgeInsets.all(20),
+                          child: CircularProgressIndicator(
+                            color: Color(0xFF173B63),
+                            strokeWidth: 4,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+
+                  // Simulasi loading 2 detik
+                  await Future.delayed(const Duration(seconds: 2));
+
+                  Navigator.pop(context); // tutup loading
+
+                  // ============= TO INVOICE SCREEN =============
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (_) => InvoiceScreen(
                         totalHarga: totalHarga,
-                        items: keranjang, // <= seluruh barang + jumlahnya
+                        items: keranjang,
                       ),
                     ),
                   );
                 },
+
                 child: const Text(
                   "Bayar Sekarang",
                   style: TextStyle(fontSize: 16, color: Colors.white),
