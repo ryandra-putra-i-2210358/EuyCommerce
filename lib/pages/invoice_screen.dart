@@ -10,12 +10,20 @@ import 'package:project_ecommerce/pages/dashboard_screen.dart';
 
 class InvoiceScreen extends StatelessWidget {
   final int totalHarga;
-  final List<Map<String, dynamic>> items;
+  final String customerNama;
+  final String customerEmail;
+  final String customerNohp;
+  final String customerAlamat;
+  final List items;
 
   const InvoiceScreen({
     super.key,
     required this.totalHarga,
     required this.items,
+    required this.customerNama,
+    required this.customerEmail,
+    required this.customerNohp,
+    required this.customerAlamat,
   });
 
   @override
@@ -23,7 +31,6 @@ class InvoiceScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
 
-      // ================= HEADER =================
       appBar: AppBar(
         title: const Text(
           "Invoice",
@@ -35,23 +42,26 @@ class InvoiceScreen extends StatelessWidget {
         iconTheme: const IconThemeData(color: Colors.white),
       ),
 
-      // ================= BODY =================
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
           children: [
-            const SizedBox(height: 80),
+            const SizedBox(height: 40),
+            Text("Halo, $customerNama"),
+            Text("Email: $customerEmail"),
+            Text("No HP: $customerNohp"),
+            Text("Alamat: $customerAlamat"),
+            const SizedBox(height: 50),
 
-            // Teks utama di tengah
             Text(
-              "Total Pembayaran: Rp $totalHarga\nTransfer ke REKENING ATM : 123412",
+              "Total Pembayaran: Rp. $totalHarga\nSilakan transfer ke Bank BCA: 123412",
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 17, color: Colors.black87),
+              style: const TextStyle(fontSize: 17),
             ),
 
-            const SizedBox(height: 120),
+            const SizedBox(height: 80),
 
-            // ======== TOMBOL DOWNLOAD ========
+            // Tombol Download PDF
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -65,18 +75,14 @@ class InvoiceScreen extends StatelessWidget {
                 onPressed: () => _generatePdf(context),
                 child: const Text(
                   "Download Invoice",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(color: Colors.white, fontSize: 17),
                 ),
               ),
             ),
 
             const SizedBox(height: 20),
 
-            // ======== TOMBOL KEMBALI ========
+            // Kembali ke Dashboard
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -98,11 +104,7 @@ class InvoiceScreen extends StatelessWidget {
                 },
                 child: const Text(
                   "Kembali Ke Dashboard",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(color: Colors.white, fontSize: 17),
                 ),
               ),
             ),
@@ -115,7 +117,7 @@ class InvoiceScreen extends StatelessWidget {
   Future<void> _generatePdf(BuildContext context) async {
     final pdf = pw.Document();
 
-    // ======== LOAD GAMBAR PER ITEM =========
+    // LOAD GAMBAR ITEM
     final List<pw.MemoryImage?> images = [];
 
     for (var item in items) {
@@ -135,7 +137,7 @@ class InvoiceScreen extends StatelessWidget {
       }
     }
 
-    // =============== PDF PAGE ===============
+    // ========= PDF PAGE =========
     pdf.addPage(
       pw.Page(
         build: (_) => pw.Padding(
@@ -143,29 +145,45 @@ class InvoiceScreen extends StatelessWidget {
           child: pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
+
+              // TITLE
               pw.Center(
                 child: pw.Text(
                   "INVOICE PEMBELIAN",
                   style: pw.TextStyle(
-                    fontSize: 24,
+                    fontSize: 26,
                     fontWeight: pw.FontWeight.bold,
                   ),
                 ),
               ),
+              pw.SizedBox(height: 30),
 
-              pw.SizedBox(height: 20),
-
+              // ========== CUSTOMER DETAIL ==========
               pw.Text(
-                "Detail Pembelian:",
+                "DATA CUSTOMER",
                 style: pw.TextStyle(
                   fontSize: 18,
                   fontWeight: pw.FontWeight.bold,
                 ),
               ),
+              pw.SizedBox(height: 6),
+              pw.Text("Nama     : $customerNama"),
+              pw.Text("Email    : $customerEmail"),
+              pw.Text("No HP    : $customerNohp"),
+              pw.Text("Alamat   : $customerAlamat"),
+              pw.SizedBox(height: 20),
 
+              // TITLE PRODUK
+              pw.Text(
+                "DETAIL PEMBELIAN",
+                style: pw.TextStyle(
+                  fontSize: 18,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
               pw.SizedBox(height: 10),
 
-              // =============== TABLE ===============
+              // TABLE PRODUK
               pw.Table(
                 border: pw.TableBorder.all(),
                 columnWidths: {
@@ -177,9 +195,7 @@ class InvoiceScreen extends StatelessWidget {
                 children: [
                   // Header
                   pw.TableRow(
-                    decoration: const pw.BoxDecoration(
-                      color: PdfColors.grey300,
-                    ),
+                    decoration: const pw.BoxDecoration(color: PdfColors.grey300),
                     children: [
                       _headerCell("Foto"),
                       _headerCell("Produk"),
@@ -188,7 +204,7 @@ class InvoiceScreen extends StatelessWidget {
                     ],
                   ),
 
-                  // Data Rows
+                  // Data rows
                   for (int i = 0; i < items.length; i++)
                     _buildRow(items[i], images[i]),
                 ],
@@ -205,7 +221,7 @@ class InvoiceScreen extends StatelessWidget {
               ),
 
               pw.SizedBox(height: 10),
-              pw.Text("Transfer ke: 1234567890 (Bank BCA)"),
+              pw.Text("Silakan transfer ke Bank BCA: 1234567890"),
             ],
           ),
         ),
@@ -214,7 +230,7 @@ class InvoiceScreen extends StatelessWidget {
 
     final bytes = await pdf.save();
 
-    // =============== ANDROID SAVE ===============
+    // SAVE ANDROID
     if (Platform.isAndroid) {
       final permission = await Permission.manageExternalStorage.request();
 
@@ -232,13 +248,11 @@ class InvoiceScreen extends StatelessWidget {
       await file.writeAsBytes(bytes, flush: true);
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Invoice berhasil disimpan ke folder Download"),
-        ),
+        const SnackBar(content: Text("Invoice berhasil disimpan ke folder Download")),
       );
     }
 
-    // =============== iOS SHARE ===============
+    // SAVE iOS
     if (Platform.isIOS) {
       final dir = await getApplicationDocumentsDirectory();
       final file = File("${dir.path}/invoice.pdf");
@@ -248,7 +262,7 @@ class InvoiceScreen extends StatelessWidget {
     }
   }
 
-  // =============== HEADER CELL ===============
+  // HEADER CELL
   pw.Widget _headerCell(String text, {pw.TextAlign align = pw.TextAlign.left}) {
     return pw.Padding(
       padding: const pw.EdgeInsets.all(6),
@@ -256,7 +270,7 @@ class InvoiceScreen extends StatelessWidget {
     );
   }
 
-  // =============== ROW ITEM ===============
+  // ROW ITEM TABLE
   pw.TableRow _buildRow(Map<String, dynamic> item, pw.MemoryImage? image) {
     final barang = item["barang"] as BarangModel;
     final jumlah = item["jumlah"] as int;
@@ -273,10 +287,7 @@ class InvoiceScreen extends StatelessWidget {
                   height: 50,
                   color: PdfColors.grey300,
                   alignment: pw.Alignment.center,
-                  child: pw.Text(
-                    "No\nImage",
-                    textAlign: pw.TextAlign.center,
-                  ),
+                  child: pw.Text("No\nImage", textAlign: pw.TextAlign.center),
                 ),
         ),
 
@@ -292,8 +303,7 @@ class InvoiceScreen extends StatelessWidget {
 
         pw.Padding(
           padding: const pw.EdgeInsets.all(6),
-          child: pw.Text("Rp $subtotal",
-              textAlign: pw.TextAlign.center),
+          child: pw.Text("Rp $subtotal", textAlign: pw.TextAlign.center),
         ),
       ],
     );

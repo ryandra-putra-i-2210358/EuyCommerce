@@ -2,7 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:project_ecommerce/utils/cart_storage.dart';
 import 'package:project_ecommerce/models/barang_model.dart';
-import 'package:project_ecommerce/pages/invoice_screen.dart';
+// import 'package:project_ecommerce/pages/invoice_screen.dart';
+import 'package:project_ecommerce/pages/customer_form_screen.dart';
 
 class CheckoutScreen extends StatelessWidget {
   const CheckoutScreen({super.key});
@@ -13,6 +14,7 @@ class CheckoutScreen extends StatelessWidget {
     final totalHarga = CartStorage.totalHarga();
 
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: const Color(0xFF173B63),
         title: const Text(
@@ -150,12 +152,13 @@ class CheckoutScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => InvoiceScreen(
+                      builder: (_) => CustomerFormScreen(
                         totalHarga: totalHarga,
                         items: keranjang,
                       ),
                     ),
                   );
+
                 },
 
                 child: const Text(

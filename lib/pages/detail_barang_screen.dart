@@ -13,7 +13,9 @@ class DetailBarangScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
+        // backgroundColor: Colors.white,
         backgroundColor: const Color(0xFF173B63),
         iconTheme: const IconThemeData(color: Colors.white),
         title: const Text(
