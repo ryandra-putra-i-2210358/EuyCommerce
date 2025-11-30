@@ -1,9 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+
 import '../models/kategori_model.dart';
 import '../utils/kategori_storage.dart';
-import 'package:project_ecommerce/utils/file_helper.dart';
+import '../utils/file_helper.dart';
 
 class KategoriScreen extends StatefulWidget {
   const KategoriScreen({super.key});
@@ -13,10 +14,11 @@ class KategoriScreen extends StatefulWidget {
 }
 
 class _KategoriScreenState extends State<KategoriScreen> {
-  final namaKategoriController = TextEditingController();
+  final TextEditingController namaKategoriController = TextEditingController();
 
   File? pickedImage;
   List<KategoriModel> kategoriList = [];
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -24,201 +26,259 @@ class _KategoriScreenState extends State<KategoriScreen> {
     loadKategori();
   }
 
-  // Load data kategori dari penyimpanan
-  void loadKategori() async {
+  Future<void> loadKategori() async {
     kategoriList = await KategoriStorage.getKategori();
-    setState(() {});
+    setState(() => isLoading = false);
   }
 
-  // Pilih foto dari gallery
   Future<void> pickImage() async {
-  final ImagePicker picker = ImagePicker();
+    final picker = ImagePicker();
+    final XFile? file = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1500,
+      maxHeight: 1500,
+      imageQuality: 85,
+    );
 
-  final XFile? file = await picker.pickImage(
-    source: ImageSource.gallery,
-    maxWidth: 1500,
-    maxHeight: 1500,
-    imageQuality: 85,
-  );
+    if (file == null) return;
 
-  if (file == null) return;
+    File img = File(file.path);
 
-  File imgFile = File(file.path);
+    try {
+      img = await convertToJpeg(img);
+    } catch (_) {}
 
-  try {
-    // Convert ke JPEG untuk jaga-jaga
-    imgFile = await convertToJpeg(imgFile);
-  } catch (_) {}
+    setState(() => pickedImage = img);
+  }
 
-  setState(() {
-    pickedImage = imgFile;
-  });
-}
+  Future<void> addKategori() async {
+    final name = namaKategoriController.text.trim();
 
+    if (name.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Nama kategori tidak boleh kosong")),
+      );
+      return;
+    }
 
+    final exists = kategoriList.any(
+      (e) => e.name.toLowerCase() == name.toLowerCase(),
+    );
 
-  // Hapus kategori
-  void deleteKategori(String name) async {
+    if (exists) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Kategori sudah ada")),
+      );
+      return;
+    }
+
+    await KategoriStorage.addKategori(
+      KategoriModel(
+        name: name,
+        image: pickedImage?.path,
+      ),
+    );
+
+    namaKategoriController.clear();
+    pickedImage = null;
+
+    await loadKategori();
+  }
+
+  Future<void> confirmDeleteKategori(String name, String? imagePath) async {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Hapus Kategori"),
+        content: Text("Apakah kamu yakin ingin menghapus kategori '$name'?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Batal"),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              deleteKategori(name, imagePath);
+            },
+            child: const Text(
+              "Hapus",
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> deleteKategori(String name, String? imagePath) async {
     await KategoriStorage.deleteKategori(name);
-    loadKategori();
+
+    if (imagePath != null && File(imagePath).existsSync()) {
+      try {
+        File(imagePath).deleteSync();
+      } catch (_) {}
+    }
+
+    await loadKategori();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-
       appBar: AppBar(
         backgroundColor: const Color(0xFF173B63),
         centerTitle: true,
-        automaticallyImplyLeading: true,
-        iconTheme: const IconThemeData(color: Colors.white),
         title: const Text(
           "Tambah Kategori",
           style: TextStyle(color: Colors.white),
         ),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
 
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 25),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // FOTO KATEGORI
-            GestureDetector(
-              onTap: pickImage,
-              child: Container(
-                width: 180,
-                height: 180,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.black, width: 2),
-                  image: pickedImage != null
-                      ? DecorationImage(
-                          image: FileImage(pickedImage!),
-                          fit: BoxFit.cover,
-                        )
-                      : null,
-                ),
-                child: pickedImage == null
-                    ? const Icon(
-                        Icons.image_outlined,
-                        size: 110,
-                        color: Colors.black87,
-                      )
-                    : null,
-              ),
-            ),
-
-            const SizedBox(height: 35),
-
-            // Input nama kategori
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 18),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.black, width: 1.5),
-              ),
-              child: TextField(
-                controller: namaKategoriController,
-                decoration: const InputDecoration(
-                  hintText: "Kategori",
-                  border: InputBorder.none,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // Tombol tambah
-            SizedBox(
-              width: double.infinity,
-              height: 55,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF173B63),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-                onPressed: () async {
-                  final name = namaKategoriController.text.trim();
-                  if (name.isEmpty) return;
-
-                  await KategoriStorage.addKategori(
-                    KategoriModel(
-                      name: name,
-                      image: pickedImage?.path,
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 25),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // FOTO PREVIEW
+                  GestureDetector(
+                    onTap: pickImage,
+                    child: Container(
+                      width: 160,
+                      height: 160,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.black87, width: 2),
+                        image: pickedImage != null
+                            ? DecorationImage(
+                                image: FileImage(pickedImage!),
+                                fit: BoxFit.cover,
+                              )
+                            : null,
+                      ),
+                      child: pickedImage == null
+                          ? const Icon(Icons.image_outlined,
+                              size: 100, color: Colors.black54)
+                          : null,
                     ),
-                  );
-
-                  namaKategoriController.clear();
-                  pickedImage = null;
-                  loadKategori();
-                },
-                child: const Text(
-                  "Tambah ke daftar kategori",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
                   ),
-                ),
-              ),
-            ),
 
-            const SizedBox(height: 30),
+                  const SizedBox(height: 30),
 
-            const Text(
-              "Daftar Kategori",
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
-            ),
+                  // INPUT KATEGORI
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 18),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: Colors.black87, width: 1.4),
+                    ),
+                    child: TextField(
+                      controller: namaKategoriController,
+                      decoration: const InputDecoration(
+                        hintText: "Nama kategori",
+                        border: InputBorder.none,
+                      ),
+                    ),
+                  ),
 
-            const SizedBox(height: 10),
+                  const SizedBox(height: 20),
 
-            // LIST KATEGORI
-            ...kategoriList.map((item) {
-              return Container(
-                margin: const EdgeInsets.only(bottom: 10),
-                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 14),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(15),
-                  border: Border.all(color: Colors.black54, width: 1.3),
-                ),
-                child: Row(
-                  children: [
-                    // FOTO
-                    if (item.image != null && File(item.image!).existsSync())
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: Image.file(
-                          File(item.image!),
-                          width: 50,
-                          height: 50,
-                          fit: BoxFit.cover,
+                  // TOMBOL TAMBAH
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF173B63),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18),
                         ),
-                      )
-                    else
-                      const Icon(Icons.image_outlined, size: 45),
-
-
-                    const SizedBox(width: 15),
-
-                    Expanded(
-                      child: Text(item.name, style: const TextStyle(fontSize: 16)),
+                      ),
+                      onPressed: addKategori,
+                      child: const Text(
+                        "Tambah ke daftar kategori",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
+                  ),
 
-                    IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: () => deleteKategori(item.name),
+                  const SizedBox(height: 35),
+
+                  const Text(
+                    "Daftar Kategori",
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
                     ),
-                  ],
-                ),
-              );
-            }).toList(),
-          ],
-        ),
-      ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  // LIST KATEGORI
+                  ...kategoriList.map((item) {
+                    final imageFile =
+                        item.image != null ? File(item.image!) : null;
+                    final imageExists =
+                        imageFile != null && imageFile.existsSync();
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 15, vertical: 14),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15),
+                        border: Border.all(color: Colors.black45, width: 1.2),
+                      ),
+                      child: Row(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: imageExists
+                                ? Image.file(
+                                    imageFile,
+                                    width: 50,
+                                    height: 50,
+                                    fit: BoxFit.cover,
+                                  )
+                                : const Icon(
+                                    Icons.image_not_supported,
+                                    size: 45,
+                                    color: Colors.black45,
+                                  ),
+                          ),
+
+                          const SizedBox(width: 15),
+
+                          Expanded(
+                            child: Text(
+                              item.name,
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                          ),
+
+                          IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () => confirmDeleteKategori(
+                              item.name,
+                              item.image,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ],
+              ),
+            ),
     );
   }
 }

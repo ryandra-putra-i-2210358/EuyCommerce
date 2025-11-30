@@ -24,6 +24,7 @@ class _TambahBarangScreenState extends State<TambahBarangScreen> {
   final namaController = TextEditingController();
   final hargaJualController = TextEditingController();
   final hargaBeliController = TextEditingController();
+  final bahanBakuController = TextEditingController();
   final labaController = TextEditingController();
 
   String selectedKategori = "";
@@ -107,13 +108,13 @@ class _TambahBarangScreenState extends State<TambahBarangScreen> {
 
     final item = BarangModel(
       nama: namaController.text,
+      bahanBaku: bahanBakuController.text,
       hargaJual: int.tryParse(hargaJualController.text) ?? 0,
       hargaBeli: int.tryParse(hargaBeliController.text) ?? 0,
       laba: int.tryParse(labaController.text) ?? 0,
       kategori: selectedKategori,
       imagePath: selectedImage?.path,
     );
-
 
     await BarangStorage.addBarang(item);
 
@@ -122,6 +123,7 @@ class _TambahBarangScreenState extends State<TambahBarangScreen> {
     );
 
     namaController.clear();
+    bahanBakuController.clear();
     hargaJualController.clear();
     hargaBeliController.clear();
     labaController.clear();
@@ -206,6 +208,9 @@ class _TambahBarangScreenState extends State<TambahBarangScreen> {
             _inputField("Nama Barang", namaController),
             const SizedBox(height: 15),
 
+            _inputField("Bahan Baku", bahanBakuController),
+            const SizedBox(height: 15),
+
             _inputField("Harga Jual", hargaJualController, isNumber: true),
             const SizedBox(height: 15),
 
@@ -236,7 +241,6 @@ class _TambahBarangScreenState extends State<TambahBarangScreen> {
                 ),
               ),
             ),
-
           ],
         ),
       ),
@@ -279,20 +283,17 @@ class _TambahBarangScreenState extends State<TambahBarangScreen> {
             context,
             MaterialPageRoute(builder: (_) => const DashboardScreen()),
           );
-        } 
-        else if (index == 1) {
+        } else if (index == 1) {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const RekapScreen()),
           );
-        } 
-        else if (index == 2) {
+        } else if (index == 2) {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const TambahBarangScreen()),
           );
-        } 
-        else if (index == 3) {
+        } else if (index == 3) {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const ProfilScreen()),
@@ -302,8 +303,14 @@ class _TambahBarangScreenState extends State<TambahBarangScreen> {
 
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: "Beranda"),
-        BottomNavigationBarItem(icon: Icon(Icons.receipt_long), label: "Rekap"),
-        BottomNavigationBarItem(icon: Icon(Icons.add_box), label: "Tambah"),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.receipt_long),
+          label: "Rekapitulasi",
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.add_box),
+          label: "Tambah Barang",
+        ),
         BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profil"),
       ],
     );

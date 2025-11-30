@@ -59,6 +59,7 @@ class DetailBarangScreen extends StatelessWidget {
 
             _info("Harga Jual", item.hargaJual),
             _info("Harga Beli", item.hargaBeli),
+            _info("Bahan Baku", item.bahanBaku),
             _info("Laba", item.laba),
 
             const Spacer(),
@@ -101,14 +102,22 @@ class DetailBarangScreen extends StatelessWidget {
     );
   }
 
-  Widget _info(String label, int value) {
+  Widget _info(String label, Object? value, {bool isCurrency = false}) {
+    String display;
+    if (value == null) {
+      display = "-";
+    } else if (isCurrency && value is num) {
+      display = "Rp ${value}";
+    } else {
+      display = value.toString();
+    }
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
         children: [
           Expanded(child: Text("$label :")),
-          Text("Rp $value",
-              style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text(display, style: const TextStyle(fontWeight: FontWeight.bold)),
         ],
       ),
     );

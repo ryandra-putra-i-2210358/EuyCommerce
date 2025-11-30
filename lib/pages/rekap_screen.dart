@@ -173,11 +173,11 @@ class _RekapScreenState extends State<RekapScreen> {
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.receipt_long),
-          label: "Rekap",
+          label: "Rekapitulasi",
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.add_box),
-          label: "Tambah",
+          label: "Tambah Barang",
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.person),

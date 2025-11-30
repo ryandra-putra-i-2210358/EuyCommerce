@@ -102,6 +102,17 @@ class _KeranjangScreenState extends State<KeranjangScreen> {
 
                         const SizedBox(height: 12),
 
+                        Text(
+                          "Bahan Baku : ${barang.bahanBaku}",
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.green,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+
+                        const SizedBox(height: 12),
+
                         // TOMBOL JUMLAH
                         Row(
                           children: [
