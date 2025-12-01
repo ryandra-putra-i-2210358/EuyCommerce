@@ -224,7 +224,7 @@ class _TambahBarangScreenState extends State<TambahBarangScreen> {
             _inputField("Harga Jual", hargaJualController, isNumber: true),
             const SizedBox(height: 15),
 
-            _inputField("Harga Modalfl", hargaBeliController, isNumber: true),
+            _inputField("Harga Modal", hargaBeliController, isNumber: true),
             const SizedBox(height: 15),
 
             _inputField("Laba", labaController, isNumber: true),
