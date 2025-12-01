@@ -69,12 +69,12 @@ class _ProfilScreenState extends State<ProfilScreen> {
             // ================= MENU AKUN =================
             _sectionTitle("Akun"),
             _menuItem(
-              icon: Icons.favorite,
+              icon: Icons.settings,
               title: "Pengaturan Akun",
               onTap: () {},
             ),
             _menuItem(
-              icon: Icons.settings,
+              icon: Icons.favorite,
               title: "Favorit Saya",
               onTap: () {},
             ),
