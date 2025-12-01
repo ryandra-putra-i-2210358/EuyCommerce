@@ -152,7 +152,7 @@ class _BarangByKategoriScreenState extends State<BarangByKategoriScreen> {
                               const SizedBox(height: 4),
 
                               Text(
-                                "Harga Beli: ${item.hargaBeli}",
+                                "Harga Modal: ${item.hargaBeli}",
                                 style: const TextStyle(fontSize: 13),
                               ),
                               Text(

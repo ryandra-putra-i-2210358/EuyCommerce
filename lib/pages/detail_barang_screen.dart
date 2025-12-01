@@ -60,7 +60,7 @@ class DetailBarangScreen extends StatelessWidget {
             const SizedBox(height: 30),
 
             _info("Harga Jual", item.hargaJual),
-            _info("Harga Beli", item.hargaBeli),
+            _info("Harga Modal", item.hargaBeli),
             _info("Bahan Baku", item.bahanBaku),
             _info("Laba", item.laba),
 

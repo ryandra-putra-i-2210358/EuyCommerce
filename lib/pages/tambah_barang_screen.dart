@@ -185,21 +185,30 @@ class _TambahBarangScreenState extends State<TambahBarangScreen> {
               ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
-                  hint: const Text("Pilih Kategori"),
-                  value: selectedKategori.isEmpty ? null : selectedKategori,
+                  hint: Text(
+                    kategoriList.isEmpty
+                        ? "Buat Kategori Terlebih Dahulu"
+                        : "Pilih Kategori",
+                  ),
+                  value: kategoriList.isEmpty || selectedKategori.isEmpty
+                      ? null
+                      : selectedKategori,
                   isExpanded: true,
-                  items:
-                      kategoriList.map((item) {
-                        return DropdownMenuItem(
-                          value: item.name,
-                          child: Text(item.name),
-                        );
-                      }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedKategori = value!;
-                    });
-                  },
+                  items: kategoriList.isEmpty
+                      ? null
+                      : kategoriList.map((item) {
+                          return DropdownMenuItem(
+                            value: item.name,
+                            child: Text(item.name),
+                          );
+                        }).toList(),
+                  onChanged: kategoriList.isEmpty
+                      ? null // ✅ DISABLE saat kosong
+                      : (value) {
+                          setState(() {
+                            selectedKategori = value!;
+                          });
+                        },
                 ),
               ),
             ),
@@ -215,7 +224,7 @@ class _TambahBarangScreenState extends State<TambahBarangScreen> {
             _inputField("Harga Jual", hargaJualController, isNumber: true),
             const SizedBox(height: 15),
 
-            _inputField("Harga Beli", hargaBeliController, isNumber: true),
+            _inputField("Harga Modalfl", hargaBeliController, isNumber: true),
             const SizedBox(height: 15),
 
             _inputField("Laba", labaController, isNumber: true),
