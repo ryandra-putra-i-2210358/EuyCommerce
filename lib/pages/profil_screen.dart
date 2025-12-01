@@ -3,7 +3,9 @@ import 'dashboard_screen.dart';
 import 'rekap_screen.dart';
 import 'tambah_barang_screen.dart';
 import 'package:project_ecommerce/screens/login_screen.dart';
-
+import 'package:project_ecommerce/profile/pengaturan_akun_screen.dart';
+import 'package:project_ecommerce/profile/favorit_akun_screen.dart';
+import 'package:project_ecommerce/profile/kebijakan_akun_screen.dart';
 class ProfilScreen extends StatefulWidget {
   const ProfilScreen({super.key});
 
@@ -71,12 +73,27 @@ class _ProfilScreenState extends State<ProfilScreen> {
             _menuItem(
               icon: Icons.settings,
               title: "Pengaturan Akun",
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const PengaturanAkunScreen(),
+                  ),
+                );
+              },
             ),
             _menuItem(
               icon: Icons.favorite,
               title: "Favorit Saya",
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const FavoritAkunScreen(),
+                  ),
+                );
+              },
+              
             ),
 
             const SizedBox(height: 20),
@@ -86,7 +103,15 @@ class _ProfilScreenState extends State<ProfilScreen> {
             _menuItem(
               icon: Icons.privacy_tip,
               title: "Kebijakan Layanan",
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const KebijakanAkunScreen(),
+                  ),
+                );
+              },
+              
             ),
             _menuItem(
               icon: Icons.info,
