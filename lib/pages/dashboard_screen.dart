@@ -96,7 +96,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: filteredList.isEmpty
                   ? const Center(
                       child: Text(
-                        "Tidak ada hasil",
+                        "Silahkan Isi Kategori Terlebih Dahulu",
                         style: TextStyle(fontSize: 16),
                       ),
                     )
