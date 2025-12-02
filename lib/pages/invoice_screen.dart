@@ -13,7 +13,6 @@ import 'package:project_ecommerce/utils/rekap_storage.dart';
 import 'package:project_ecommerce/pages/rekap_screen.dart';
 import 'package:lottie/lottie.dart';
 
-
 class InvoiceScreen extends StatelessWidget {
   final int totalHarga;
   final String customerNama;
